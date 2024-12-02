@@ -56,9 +56,11 @@ input_fastq <- function(path){
 }
 
 # filter_names: get the filtered forward and reverse fastq files
-filter_names <- function(path, sample.names){
-  filtFs <- file.path(path, "output/filtered" ,paste0(sample.names, ".filt.1.fastq"))
-  filtRs <- file.path(path, "output/filtered", paste0(sample.names, ".filt.2.fastq"))
+filter_names <- function(rRNA, sample.names){
+  system(paste0("mkdir -p output/filtered_",rRNA))
+  filtFs <- file.path(paste0("output/filtered_",rRNA,"/", sample.names, ".filt.1.fastq"))
+  filtRs <- file.path(paste0("output/filtered_",rRNA,"/", sample.names, ".filt.2.fastq"))
+  #filtRs <- file.path(path, "filtered", paste0(sample.names, ".filt.2.fastq"))
   names(filtFs) <- sample.names
   names(filtRs) <- sample.names
   results <- list(
@@ -68,10 +70,7 @@ filter_names <- function(path, sample.names){
 }
 
 # filter: filter the forward and reverse fastq files
-filter_ <- function(fnFs,fnRs, path ,sample.names){
-  filter_names <- filter_names(path, sample.names)
-  filtFs <- filter_names$filtFs
-  filtRs <- filter_names$filtRs
+filter_data <- function(filtFs,filtRs, path ,sample.names){
   output<-filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
         maxN=0, maxEE=c(2,2),truncQ = 2,
         compress=FALSE, multithread=TRUE)

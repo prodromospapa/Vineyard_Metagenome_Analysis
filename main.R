@@ -59,9 +59,10 @@ fnRs <- in_fastq$fnRs
 sample.names <- in_fastq$sample.names
 
 # Filter the data
-out <- filter_names(path, sample.names)
+out <- filter_names(rRNA, sample.names)
 filtFs <- out$filtFs
 filtRs <- out$filtRs
+filter_data(filtFs,filtRs, path ,sample.names)
 
 # Learn the errors
 errF <- learnErrors(filtFs, multithread=TRUE)
