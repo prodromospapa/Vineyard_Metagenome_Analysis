@@ -114,7 +114,7 @@ ps <- function(seqtab.nochim,taxa_){
 # make_biom: create a BIOM object from the OTU data
 otu2biom <- function(ps_,rRNA){
 # Define the output file path
-output_file_path <- paste0("output/output_file",rRNA,".biom")
+output_file_path <- paste0("output/output_file_",rRNA,".biom")
 # Check if the output file already exists
 if (!file.exists(output_file_path)) {
   system("mkdir -p output")
