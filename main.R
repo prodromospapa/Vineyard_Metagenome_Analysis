@@ -1,4 +1,4 @@
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+setwd(dirname(normalizePath(commandArgs(trailingOnly = FALSE)[grep("--file=", commandArgs(trailingOnly = FALSE))])))
 if (dir.exists("output_file")) {
   print("The output file exists. ")
   quit(save = "no")}
@@ -45,9 +45,9 @@ plot <- params$plot
 
 
 if (rRNA == "16S"){
-  load("SILVA_SSU_r138_2019.RData")
+  load("SILVA_SSU_r138_2019.RData") # https://figshare.com/ndownloader/files/46245217
 } else if (rRNA == "ITS"){
-  load("UNITE_v2023_July2023.RData")
+  load("UNITE_v2023_July2023.RData") # https://figshare.com/articles/dataset/UNITE_v2023_July2023/27018373?file=49181545
 } else{
   stop("Invalid rRNA argument. Please use '16S' or 'ITS'.")
 }
@@ -59,7 +59,7 @@ fnRs <- in_fastq$fnRs
 sample.names <- in_fastq$sample.names
 
 # Filter the data
-out <- filter(fnFs, fnRs, path, sample.names)
+out <- filter_names(path, sample.names)
 filtFs <- out$filtFs
 filtRs <- out$filtRs
 
@@ -87,8 +87,8 @@ taxa <- taxa(seqtab.nochim)
 ps_ <- ps(seqtab.nochim, taxa)
 
 # Convert phyloseq object to biom format
-otu2biom(ps_)
+otu2biom(ps_,rRNA)
 
 # Run PICRUSt2
 # convert the phyloseq sequences to fasta
-seq2fna(ps_)
+seq2fna(ps_,rRNA)

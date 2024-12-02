@@ -1,3 +1,31 @@
+# List of required packages
+required_packages <- c(
+  "dada2",
+  "phyloseq",
+  "Biostrings",
+  "DECIPHER",
+  "ape",
+  "tools",
+  "ggplot2",
+  "tidyr",
+  "dplyr",
+  "vegan",
+  "ggpubr",
+  "reshape2",
+  "biomformat",
+  "phangorn"
+)
+
+# Install missing packages
+installed_packages <- rownames(installed.packages())
+missing_packages <- setdiff(required_packages, installed_packages)
+
+if (length(missing_packages) > 0) {
+  BiocManager::install(missing_packages, ask = FALSE)
+} else {
+  message("All required packages are already installed!")
+}
+
 library(dada2)
 library(phyloseq)
 library(Biostrings)
@@ -11,6 +39,7 @@ library(vegan)
 library(ggpubr)
 library(reshape2)
 library(biomformat)
+library(phangorn)
 
 
 
@@ -39,21 +68,21 @@ filter_names <- function(path, sample.names){
 }
 
 # filter: filter the forward and reverse fastq files
-filter <- function(fnFs,fnRs, path ,sample.names){
+filter_ <- function(fnFs,fnRs, path ,sample.names){
   filter_names <- filter_names(path, sample.names)
   filtFs <- filter_names$filtFs
   filtRs <- filter_names$filtRs
-    output<-filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
+  output<-filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
         maxN=0, maxEE=c(2,2),truncQ = 2,
         compress=FALSE, multithread=TRUE)
-    return(output)
+  return(output)
 }
 
 # assign_taxonomy: assign taxonomy to the sequences
 taxa <- function(seqtab.nochim){
   ranks <- c("domain", "phylum", "class", "order", "family", "genus", "species")
   dna <- DNAStringSet(getSequences(seqtab.nochim))
-  ids <- IdTaxa(dna, trainingSet, strand="top", processors=NULL, verbose=FALSE, strand="both")
+  ids <- IdTaxa(dna, trainingSet, processors=NULL, verbose=FALSE, strand="both")
   taxa_ <- t(sapply(ids, function(x) {
           m <- match(ranks, x$rank)
           taxa1 <- x$taxon[m]
@@ -84,12 +113,12 @@ ps <- function(seqtab.nochim,taxa_){
 }
 
 # make_biom: create a BIOM object from the OTU data
-otu2biom <- function(ps_){
+otu2biom <- function(ps_,rRNA){
 # Define the output file path
-output_file_path <- "output/output_file_.biom"
+output_file_path <- paste0("output/output_file",rRNA,".biom")
 # Check if the output file already exists
 if (!file.exists(output_file_path)) {
-
+  system("mkdir -p output")
   # Convert the otu_table to a matrix (required for make_biom)
   otu <- as(t(otu_table(ps_)), "matrix")
   
@@ -134,10 +163,10 @@ plot_tax <- function(ps_, group,NArm=FALSE) {
 }
 
 seq2fna <- function(ps_,rRNA){
-  if (!file.exists("study_seqs_.fna")) {
+  if (!file.exists(paste0("output/study_seqs_",rRNA,".fna"))) {
   ps_ %>%
         refseq() %>%
-        Biostrings::writeXStringSet(paste0("study_seqs_",rRNA,".fna"), append=FALSE,
+        Biostrings::writeXStringSet(paste0("output/study_seqs_",rRNA,".fna"), append=FALSE,
                                     compress=FALSE, compression_level=NA, format="fasta")
 }
 }
