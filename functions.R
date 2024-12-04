@@ -70,11 +70,10 @@ filter_names <- function(rRNA, sample.names){
 }
 
 # filter: filter the forward and reverse fastq files
-filter_data <- function(filtFs,filtRs, path ,sample.names){
-  output<-filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
+filter_data <- function(fnFs, filtFs, fnRs, filtRs, path ,sample.names){
+  filterAndTrim(fnFs, filtFs, fnRs, filtRs, 
         maxN=0, maxEE=c(2,2),truncQ = 2,
         compress=FALSE, multithread=TRUE)
-  return(output)
 }
 
 # assign_taxonomy: assign taxonomy to the sequences
@@ -155,7 +154,8 @@ plot_tax <- function(ps_, group,NArm=FALSE) {
          y = "Relative Abundance (%)") +
     theme(axis.text.x = element_text(angle = 45, hjust = 1),
     legend.position = "bottom",          # Position legend at the bottom
-    legend.box = "horizontal")
+    legend.box = "horizontal") +
+    guides(fill = guide_legend(ncol = 5))  # Show 2 columns in the legend
   
   # Save the plot
   return(plot)
