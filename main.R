@@ -124,9 +124,10 @@ for (group in ranks){
   },silent=TRUE)
   }
 
-# create abundance dendogram
-ggsave(filename = paste0("output/plots_",rRNA,"/microbiome_cluster.pdf"),
-    plot = create_dendrogram(ps_,rRNA))
+# create abundance dendrogram
+pdf(paste0("output/plots_",rRNA,"/microbiome_cluster.pdf"))
+print(create_dendrogram(ps_,rRNA))
+dev.off()
 
 # Convert phyloseq object to biom format
 otu2biom(ps_,rRNA)
