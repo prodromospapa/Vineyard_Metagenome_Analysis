@@ -1,5 +1,6 @@
 # List of required packages
 required_packages <- c(
+  "curl",
   "dada2",
   "phyloseq",
   "Biostrings",
@@ -13,18 +14,26 @@ required_packages <- c(
   "ggpubr",
   "reshape2",
   "biomformat",
-  "phangorn"
+  "phangorn",
+  "ComplexHeatmap",
+  "metan"
 )
 
 # Install missing packages
 installed_packages <- rownames(installed.packages())
 missing_packages <- setdiff(required_packages, installed_packages)
 
+if (!require("BiocManager", quietly = TRUE)){
+    options(repos = c(CRAN = "https://cran.rstudio.com/"))
+    install.packages("BiocManager")}
+
 if (length(missing_packages) > 0) {
   BiocManager::install(missing_packages, ask = FALSE)
 } else {
   message("All required packages are already installed!")
 }
+
+
 
 library(dada2)
 library(phyloseq)
@@ -40,6 +49,8 @@ library(ggpubr)
 library(reshape2)
 library(biomformat)
 library(phangorn)
+library(ComplexHeatmap)
+library(metan)
 
 
 
@@ -110,6 +121,25 @@ ps <- function(seqtab.nochim,taxa_){
   return(ps_)
 }
 
+# dendogram for abundance
+create_dendrogram <- function(ps_, rRNA) {
+  # Extract and normalize OTU table
+  otu_ <- otu_table(ps_)
+  otu_ <- otu_ / rowSums(otu_)
+  
+  # Calculate the distance matrix (Euclidean distance)
+  dist_matrix <- dist(otu_)
+  
+  # Perform hierarchical clustering
+  hc <- hclust(dist_matrix, method = "ward.D2")
+  
+  # Plot the dendrogram with height limits
+  plot_ <- plot(hc, main = paste("Dendrogram for ", rRNA, sep = ""), xlab = "", sub = ""
+       #,hang = -1 # ensures that all leaf labels in the dendrogram hang at the same level
+       )
+  return(plot_)
+}
+
 # make_biom: create a BIOM object from the OTU data
 otu2biom <- function(ps_,rRNA){
 # Define the output file path
@@ -138,10 +168,14 @@ if (!file.exists(output_file_path)) {
 # plot_tax: plot the taxonomic composition at a specified taxonomic level
 plot_tax <- function(ps_, group,NArm=FALSE) {
   # Aggregate at the specified taxonomic level
-  ps_genus <- tax_glom(ps_, taxrank = group,NArm=NArm)
-  
+  ps_genus <- tax_glom(ps_, taxrank = group,NArm=FALSE)
+
   # Transform counts to relative abundance
   ps_genus_rel <- transform_sample_counts(ps_genus, function(x) x / sum(x) * 100)
+
+  if (NArm){
+  ps_genus_rel <- tax_glom(ps_genus_rel, taxrank = group,NArm=TRUE)
+  }
   
   # Convert to data frame for ggplot
   taxa_df <- psmelt(ps_genus_rel)
@@ -161,6 +195,7 @@ plot_tax <- function(ps_, group,NArm=FALSE) {
   return(plot)
 }
 
+# convert phyloseq to fna file
 seq2fna <- function(ps_,rRNA){
   if (!file.exists(paste0("output/study_seqs_",rRNA,".fna"))) {
   ps_ %>%
@@ -169,3 +204,27 @@ seq2fna <- function(ps_,rRNA){
                                     compress=FALSE, compression_level=NA, format="fasta")
 }
 }
+
+#convert the output of picrust to dataframe for R
+tsv2df <- function(rRNA) {
+  df_o <- read.csv(paste0("output/picrust_",rRNA,"/pathways_out/path_abun_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+  rn <- rownames(df_o)
+  df <- data.frame(lapply(df_o, function(x) x*100 / sum(x))) # due to different sequencing depth
+  rownames(df) <- rn
+  return(df)
+}
+
+# make a plot out of picrust output
+plot_df <- function(df){
+heatmap <- Heatmap(df,
+  name = "Microbial Abundance(%)",  # Title for the color bar
+                    na_col="grey",
+                    row_title = "Relative Pathway Abundance",     # Title for rows
+                    column_title = "Community-Wide Metabolic Pathway Abundances",   # Title for columns
+                    show_row_names = FALSE,             # Show row names
+                    show_column_names = TRUE,
+                    show_row_dend=FALSE,
+                    show_column_dend=FALSE)
+return(heatmap)
+}
+

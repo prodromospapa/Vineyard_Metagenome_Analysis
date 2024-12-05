@@ -9,29 +9,33 @@ Requirements:
         2) https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
 
 
-2) Install picrust2 using (https://huttenhower.sph.harvard.edu/picrust/):
+2) Make the picrust2 environment and install picrust2 and all the other necessary libraries in it(https://huttenhower.sph.harvard.edu/picrust/):
 
 ```bash
-conda install -n picrust2 -c bioconda -c conda-forge picrust2
+conda create -n picrust2 -c bioconda -c conda-forge picrust2 r-igraph r-curl
 ```
 
-also download this [picrust2](https://github.com/picrust/picrust2/tree/master/picrust2) folder, as it is needed for ITS, and put it in the main directory.
+also download this [picrust2 reference files folder](https://github.com/picrust/picrust2/tree/master/picrust2/default_files), as it is needed for ITS, and put it in the main directory (do not rename the file).
 
 RUN:
 
-1) This exports the results for abundance:
+1) Enter the picrust2 environment:
 
 ```bash
-Rscript main.R -d < directory of fastq files > -r < rRNA (16S or ITS) > -p < optional to print plots, default: FALSE > -m < set method to assign taxonomy (dada2 or decipher), default: dada2 >
+conda activate picrust2
+```
+
+2) Run the `main.R` to export the microbial populations abundance and function, with the respectively plots:
+
+```bash
+Rscript main.R -d < directory of fastq files > -r < rRNA (16S or ITS) > -m < set method to assign taxonomy (dada2 or decipher), default: dada2 >
 ```
 example:
 
 ```bash
-Rscript main.R -d wine_varieties -r 16S -p -m dada2
+Rscript main.R -d wine_varieties -r 16S -m dada2
 ```
 
-2) This calculates the total microbiome functional abundances (you must have installed the picrust2 environment above):
+Results:
 
-```bash
-source functional.sh
-```
+You can find the results in the `output` folder
