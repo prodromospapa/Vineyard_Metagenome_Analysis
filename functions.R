@@ -206,8 +206,20 @@ seq2fna <- function(ps_,rRNA){
 }
 
 #convert the output of picrust to dataframe for R
-tsv2df <- function(rRNA) {
-  df_o <- read.csv(paste0("output/picrust_",rRNA,"/pathways_out/path_abun_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+tsv2df <- function(rRNA,base) {
+  if (base=="EC"){
+    if(rRNA=="16S"){
+      df_o <- read.csv(paste0("output/picrust_",rRNA,"/EC_metagenome_out/pred_metagenome_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+    }else if(rRNA == "ITS"){
+      df_o <- read.csv(paste0("output/picrust_",rRNA,"/ec_ITS_counts.txt_metagenome_out/pred_metagenome_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+    }
+  }
+  else if(base=="KO"){
+    df_o <- read.csv(paste0("output/picrust_",rRNA,"/KO_metagenome_out/pred_metagenome_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+  }else if(base=="pathways"){
+    df_o <- read.csv(paste0("output/picrust_",rRNA,"/pathways_out/path_abun_unstrat.tsv.gz"), sep = "\t", row.names = 1)
+  }
+  
   rn <- rownames(df_o)
   df <- data.frame(lapply(df_o, function(x) x*100 / sum(x))) # due to different sequencing depth
   rownames(df) <- rn

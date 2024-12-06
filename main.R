@@ -101,7 +101,7 @@ if (method == "dada2"){
 # Create phyloseq object
 ps_ <- ps(seqtab.nochim, taxa)
 
-# remove 
+# remove the unwanted taxa
 if (rRNA=="16S"){
   ps_ = subset_taxa(ps_, 
                    Family  != "Mitochondria" &
@@ -112,8 +112,9 @@ if (rRNA=="16S"){
 }
 
 # export percentages
-write.csv(transform_sample_counts(otu_table(ps_), function(x) round(x / sum(x) * 100,2)),file=paste0("output/otu_",rRNA,".csv"))
-write.csv(tax_table(ps_),file=paste0("output/taxa_",rRNA,".csv"))
+system(paste0("mkdir -p output/dataframes_",rRNA))
+write.csv(transform_sample_counts(otu_table(ps_), function(x) round(x / sum(x) * 100,2)),file=paste0("output/dataframes_",rRNA,"/otu_",rRNA,".csv"))
+write.csv(tax_table(ps_),file=paste0("output/dataframes_",rRNA,"/taxa_",rRNA,".csv"))
 
 # create abundance plots
 system(paste0("mkdir -p output/plots_",rRNA))
@@ -129,6 +130,11 @@ pdf(paste0("output/plots_",rRNA,"/microbiome_cluster.pdf"))
 print(create_dendrogram(ps_,rRNA))
 dev.off()
 
+# alpha statistic plot
+pdf(paste0("output/plots_",rRNA,"/alpha.pdf"))
+plot_richness(ps_,color="samples",nrow=3)
+dev.off()
+
 # Convert phyloseq object to biom format
 otu2biom(ps_,rRNA)
 
@@ -140,21 +146,29 @@ seq2fna(ps_,rRNA)
 system(paste0("bash functional.sh ", rRNA))
 
 # plot the results
-df <- tsv2df(rRNA)
+for (base in c("EC","KO","pathways") ){
+  if (rRNA=="ITS" && bas=="KO"){
+    next
+  }
+  df <- tsv2df(rRNA,base)
 
-# heatmap
-pdf(paste0("output/plots_",rRNA,"/functional_heatmap.pdf"))
-print(plot_df(df))
-dev.off()
+  # export dataframe to csv 
+  write.csv(df,file=paste0("output/dataframes_",rRNA,"/functional_",rRNA,"_",base,".csv"))
 
-# correlation
-pdf(paste0("output/plots_",rRNA,"/correlation.pdf"))
-plot(corr_coef(df))
-dev.off()
+  # heatmap
+  pdf(paste0("output/plots_",rRNA,"/functional_heatmap_",base,".pdf"))
+  print(plot_df(df))
+  dev.off()
 
-# clustering
-dist_matrix <- dist(t(df), method = "euclidean")
-hclust_result <- hclust(dist_matrix, method = "ward.D2")
-pdf(paste0("output/plots_",rRNA,"/functional_cluster.pdf"))
-plot(hclust_result, main = "Hierarchical Clustering of Wine Varieties", xlab = "", sub = "")
-dev.off()
+  # correlation
+  pdf(paste0("output/plots_",rRNA,"/correlation_",base,".pdf"))
+  plot(corr_coef(df))
+  dev.off()
+
+  # clustering
+  dist_matrix <- dist(t(df), method = "euclidean")
+  hclust_result <- hclust(dist_matrix, method = "ward.D2")
+  pdf(paste0("output/plots_",rRNA,"/functional_cluster_",base,".pdf"))
+  plot(hclust_result, main = "Hierarchical Clustering of Wine Varieties", xlab = "", sub = "")
+  dev.off()
+}

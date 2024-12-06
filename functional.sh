@@ -18,5 +18,5 @@ elif [ "$1" == "ITS" ]; then
         --ref_dir default_files/fungi/fungi_ITS \
         --custom_trait_tables default_files/fungi/ec_ITS_counts.txt.gz \
         --marker_gene_table default_files/fungi/ITS_counts.txt.gz \
-        --reaction_func default_files/fungi/ec_ITS_counts.txt.gz
+        --reaction_func default_files/fungi/ec_ITS_counts.txt.gz\
 fi
