@@ -9,7 +9,7 @@ Requirements:
         2) https://doi.plutof.ut.ee/doi/10.15156/BIO/2959330
 
 
-2) Make the picrust2 environment and install picrust2 and all the other necessary libraries in it(https://huttenhower.sph.harvard.edu/picrust/):
+2) Make the picrust2 environment, install picrust2 and all the other necessary libraries in it(https://huttenhower.sph.harvard.edu/picrust/):
 
 ```bash
 conda create -n picrust2 -c bioconda -c conda-forge picrust2 r-igraph r-curl
