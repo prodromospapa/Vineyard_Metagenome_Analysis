@@ -114,11 +114,11 @@ if (rRNA=="16S"){
     ps_ <- subset_taxa(ps_, !rank_col %in% grep("Incertae_sedis", rank_col, value = TRUE)) # Remove taxa with "Incertae_sedis"
   } # it remove the Incertae sedis
 }
+system(paste0("mkdir -p output/dataframes_",rRNA))
 removed_per <- rowSums(otu_table(ps_b4))-rowSums(otu_table(ps_))/rowSums(otu_table(ps_b4))
 write.csv(t(removed_per), file = paste0("output/dataframes_",rRNA,"/percentage_removed.csv"),row.names=FALSE)
 
 # export percentages
-system(paste0("mkdir -p output/dataframes_",rRNA))
 write.csv(transform_sample_counts(otu_table(ps_), function(x) round(x / sum(x) * 100,2)),file=paste0("output/dataframes_",rRNA,"/otu_",rRNA,".csv"))
 write.csv(tax_table(ps_),file=paste0("output/dataframes_",rRNA,"/taxa_",rRNA,".csv"))
 
