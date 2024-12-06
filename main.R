@@ -115,7 +115,7 @@ if (rRNA=="16S"){
   } # it remove the Incertae sedis
 }
 system(paste0("mkdir -p output/dataframes_",rRNA))
-removed_per <- round((rowSums(otu_table(ps_b4))-rowSums(otu_table(ps_)))/rowSums(otu_table(ps_b4)),2)
+removed_per <- round((rowSums(otu_table(ps_b4))-rowSums(otu_table(ps_)))*100/rowSums(otu_table(ps_b4)),2)
 write.csv(t(removed_per), file = paste0("output/dataframes_",rRNA,"/percentage_removed.csv"),row.names=FALSE)
 
 # export percentages
