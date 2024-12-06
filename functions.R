@@ -122,7 +122,8 @@ ps <- function(seqtab.nochim,taxa_){
 }
 
 # dendogram for abundance
-create_dendrogram <- function(ps_, rRNA) {
+create_dendrogram <- function(ps_, rRNA,taxrank) {
+  ps_ <- tax_glom(ps_, taxrank =taxrank,NArm=TRUE)
   # Extract and normalize OTU table
   otu_ <- otu_table(ps_)
   otu_ <- otu_ / rowSums(otu_)

@@ -107,8 +107,10 @@ if (rRNA=="16S"){
                    Family  != "Mitochondria" &
                      Class   != "Chloroplast")
 } else if (rRNA=="ITS"){
-  ps_ = subset_taxa(ps_,
-                    Class != "Ascomycota_cls_Incertae_sedis")
+  for (rank in rank_names(ps_)) {
+    rank_col <- as.character(tax_table(ps_)[, rank]) # Ensure rank_col is a character vector
+    ps_ <- subset_taxa(ps_, !rank_col %in% grep("Incertae_sedis", rank_col, value = TRUE)) # Remove taxa with "Incertae_sedis"
+  } # it remove the Incertae sedis
 }
 
 # export percentages
@@ -127,12 +129,12 @@ for (group in ranks){
 
 # create abundance dendrogram
 pdf(paste0("output/plots_",rRNA,"/microbiome_cluster.pdf"))
-print(create_dendrogram(ps_,rRNA))
+print(create_dendrogram(ps_,rRNA,"Genus")) # group according to Genus
 dev.off()
 
 # alpha statistic plot
 pdf(paste0("output/plots_",rRNA,"/alpha.pdf"))
-plot_richness(ps_,color="samples",nrow=3)
+print(plot_richness(ps_,color="samples",nrow=3))
 dev.off()
 
 # Convert phyloseq object to biom format
@@ -147,7 +149,7 @@ system(paste0("bash functional.sh ", rRNA))
 
 # plot the results
 for (base in c("EC","KO","pathways") ){
-  if (rRNA=="ITS" && bas=="KO"){
+  if (rRNA=="ITS" && base=="KO"){
     next
   }
   df <- tsv2df(rRNA,base)
@@ -162,7 +164,7 @@ for (base in c("EC","KO","pathways") ){
 
   # correlation
   pdf(paste0("output/plots_",rRNA,"/correlation_",base,".pdf"))
-  plot(corr_coef(df))
+  print(plot(corr_coef(df)))
   dev.off()
 
   # clustering
