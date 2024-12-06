@@ -101,17 +101,21 @@ if (method == "dada2"){
 # Create phyloseq object
 ps_ <- ps(seqtab.nochim, taxa)
 
+ps_b4 <- ps_
 # remove the unwanted taxa
 if (rRNA=="16S"){
   ps_ = subset_taxa(ps_, 
                    Family  != "Mitochondria" &
                      Class   != "Chloroplast")
 } else if (rRNA=="ITS"){
+  ps_ = subset_taxa(ps_, !is.na(Class)) # remove NA ASV with NA in such a higher taxo like Class
   for (rank in rank_names(ps_)) {
     rank_col <- as.character(tax_table(ps_)[, rank]) # Ensure rank_col is a character vector
     ps_ <- subset_taxa(ps_, !rank_col %in% grep("Incertae_sedis", rank_col, value = TRUE)) # Remove taxa with "Incertae_sedis"
   } # it remove the Incertae sedis
 }
+removed_per <- rowSums(otu_table(ps_b4))-rowSums(otu_table(ps_))/rowSums(otu_table(ps_b4))
+write.csv(t(removed_per), file = "output/dataframes_",rRNA,"/percentage_removed.csv",row.names=FALSE)
 
 # export percentages
 system(paste0("mkdir -p output/dataframes_",rRNA))
